@@ -1,0 +1,14 @@
+{
+  "hooks": {
+		"prestart": [
+			{
+			"path": "/tmp/made-up/things/config",
+			"args": [
+				"one",
+				"two"
+				]
+			}
+		]
+	},
+  "extra": "something extra"
+}

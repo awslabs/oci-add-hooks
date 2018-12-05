@@ -1,0 +1,14 @@
+{
+{
+  "hooks": {
+		"prestart": [
+			{
+			"path": "/tmp/made-up/things",
+			"args": [
+				"one",
+				"two"
+				]
+			}
+		]
+	}
+}
