@@ -99,13 +99,18 @@ func launchRunc(runcPath string, runcArgs []string) int {
 	}()
 
 	err = cmd.Wait()
+
+	return processRuncError(err)
+}
+
+func processRuncError(err error) int {
 	if err != nil {
 		if exit, ok := err.(*exec.ExitError); ok {
 			// We had a nonzero exitCode
 			if code, ok := exit.Sys().(syscall.WaitStatus); ok {
 				// and the code is retrievable
 				// so we exit with the same code
-				return int(code)
+				return code.ExitStatus()
 			}
 		}
 		// If we can't get the error code, still exit with error
