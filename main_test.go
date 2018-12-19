@@ -1,10 +1,42 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"syscall"
 	"testing"
 )
+
+func TestRuncError(t *testing.T) {
+	exitCmd := exec.Command("/bin/sh", "-c 'exit 2'")
+	exitErr := exitCmd.Run()
+	cases := []struct {
+		err      error
+		expected int
+	}{
+		{
+			err:      nil,
+			expected: 0,
+		},
+		{
+			err:      errors.New("simple error"),
+			expected: 1,
+		},
+		{
+			err:      exitErr,
+			expected: 2,
+		},
+	}
+	for _, c := range cases {
+		val := processRuncError(c.err)
+		if val != c.expected {
+			t.Errorf("Expected %d but got %d", c.expected, val)
+		}
+	}
+}
 
 func TestVerifyRuntimePath(t *testing.T) {
 	upDir := filepath.Join(os.TempDir(), "made-up-dir-42")
