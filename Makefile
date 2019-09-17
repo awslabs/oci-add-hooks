@@ -5,6 +5,7 @@ GOTEST?=$(GOCMD) test
 
 BINARY_NAME=oci-add-hooks
 SOURCES=$(shell find . -name '*.go')
+COMMIT=$(shell git rev-list -1 HEAD)
 
 all: test build
 
@@ -12,7 +13,7 @@ all: test build
 
 build: $(BINARY_NAME)
 $(BINARY_NAME): $(SOURCES)
-	$(GOBUILD) -o $(BINARY_NAME)
+	$(GOBUILD) -ldflags="-X main.commit=$(BINARY_NAME)-$(COMMIT)" -o $(BINARY_NAME)
 test:
 	$(GOTEST) -v ./...
 
