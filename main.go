@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -15,16 +16,24 @@ const (
 	exitCodeFailure  = 1
 )
 
-var errUnableToFindRuntime = errors.New("unable to find runtime")
+var (
+	errUnableToFindRuntime = errors.New("unable to find runtime")
+
+	commit string
+)
 
 func main() {
 	// We are doing manual flag parsing b/c the default flag package
 	// doesn't have the ability to parse only some flags and ignore unknown
 	// ones. Just requiring positional arguments for simplicity.
-	// We are expecting command line like:
+	// We are expecting command line like one of the following:
+	// self --version
 	// self --hook-config-path /path/to/hookcfg --runtime-path /path/to/runc, ... runtime flags
-	// If we don't match this, we can exit
-	if len(os.Args) < 6 || (os.Args[1] != "--hook-config-path" && os.Args[3] != "--runtime-path") {
+	// If we don't match one of these these, we can exit
+	if len(os.Args) == 2 && os.Args[1] == "--version" {
+		fmt.Println("commit:", commit)
+		os.Exit(0)
+	} else if len(os.Args) < 6 || (os.Args[1] != "--hook-config-path" && os.Args[3] != "--runtime-path") {
 		os.Exit(exitCodeFailure)
 	}
 	// If are args are present, grab the values
