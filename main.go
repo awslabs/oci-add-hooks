@@ -130,6 +130,7 @@ func processRuncError(err error) int {
 
 func prepareCommand(runcPath string, args []string) *exec.Cmd {
 	cmd := exec.Command(runcPath, args...)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd
