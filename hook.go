@@ -29,8 +29,8 @@ type hooks struct {
 	CreateRuntime   []json.RawMessage `json:"createRuntime"`
 	CreateContainer []json.RawMessage `json:"createContainer"`
 	StartContainer  []json.RawMessage `json:"startContainer"`
-	Poststart       []json.RawMessage `json:poststart"`
-	Poststop        []json.RawMessage `json:poststop"`
+	Poststart       []json.RawMessage `json:"poststart"`
+	Poststop        []json.RawMessage `json:"poststop"`
 }
 
 func (h *hooks) UnmarshalJSON(data []byte) error {
