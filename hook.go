@@ -25,9 +25,12 @@ func (c *config) MarshalJSON() ([]byte, error) {
 type hooks struct {
 	lossless.JSON `json:"-"`
 
-	Prestart  []json.RawMessage `json:"prestart"`
-	Poststart []json.RawMessage `json:poststart"`
-	Poststop  []json.RawMessage `json:poststop"`
+	Prestart        []json.RawMessage `json:"prestart"`
+	CreateRuntime   []json.RawMessage `json:"createRuntime"`
+	CreateContainer []json.RawMessage `json:"createContainer"`
+	StartContainer  []json.RawMessage `json:"startContainer"`
+	Poststart       []json.RawMessage `json:poststart"`
+	Poststop        []json.RawMessage `json:poststop"`
 }
 
 func (h *hooks) UnmarshalJSON(data []byte) error {
@@ -62,6 +65,9 @@ func (c *config) merge(in *config) {
 		return
 	}
 	c.Hooks.Prestart = mergeHook(c.Hooks.Prestart, in.Hooks.Prestart)
+	c.Hooks.CreateRuntime = mergeHook(c.Hooks.CreateRuntime, in.Hooks.CreateRuntime)
+	c.Hooks.CreateContainer = mergeHook(c.Hooks.CreateContainer, in.Hooks.CreateContainer)
+	c.Hooks.StartContainer = mergeHook(c.Hooks.StartContainer, in.Hooks.StartContainer)
 	c.Hooks.Poststart = mergeHook(c.Hooks.Poststart, in.Hooks.Poststart)
 	c.Hooks.Poststop = mergeHook(c.Hooks.Poststop, in.Hooks.Poststop)
 }

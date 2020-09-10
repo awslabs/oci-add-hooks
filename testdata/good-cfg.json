@@ -8,6 +8,21 @@
 				"two"
 				]
 			}
+		],
+        "createRuntime": [
+			{
+				"path": "/tmp/made-up/things/config"
+			}
+		],
+        "createContainer": [
+			{
+				"path": "/tmp/made-up/things/config"
+			}
+		],
+        "startContainer": [
+			{
+				"path": "/tmp/made-up/things/config"
+			}
 		]
 	},
   "extra": "something extra"

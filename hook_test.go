@@ -97,9 +97,12 @@ func TestReadHooks(t *testing.T) {
 	testCfgGood := "./testdata/good-cfg.json"
 	testCfgBad := "./testdata/bad-cfg.json"
 	cases := []struct {
-		location    string
-		expectedLen int
-		expectedErr bool
+		location                    string
+		expectedLen                 int
+		expectedCreateRuntimeHook   int
+		expectedCreateContainerHook int
+		expectedStartContainerHook  int
+		expectedErr                 bool
 	}{
 		{
 			location:    testBundleNoExists,
@@ -122,9 +125,12 @@ func TestReadHooks(t *testing.T) {
 			expectedErr: true,
 		},
 		{
-			location:    testCfgGood,
-			expectedLen: 1,
-			expectedErr: false,
+			location:                    testCfgGood,
+			expectedLen:                 1,
+			expectedCreateRuntimeHook:   1,
+			expectedCreateContainerHook: 1,
+			expectedStartContainerHook:  1,
+			expectedErr:                 false,
 		},
 	}
 	for _, test := range cases {
@@ -149,10 +155,12 @@ func TestReadHooks(t *testing.T) {
 			!(spec != nil &&
 				spec.Hooks != nil &&
 				spec.Hooks.Prestart != nil &&
-				len(spec.Hooks.Prestart) == test.expectedLen) {
-
+				len(spec.Hooks.Prestart) == test.expectedLen &&
+				len(spec.Hooks.CreateRuntime) == test.expectedCreateRuntimeHook &&
+				len(spec.Hooks.CreateContainer) == test.expectedCreateContainerHook &&
+				len(spec.Hooks.StartContainer) == test.expectedStartContainerHook) {
 			t.Errorf("Did not parse the expected prestart path length. Got %+v expected %d from file %s",
-				spec,
+				spec.Hooks,
 				test.expectedLen,
 				test.location)
 		}
