@@ -70,6 +70,7 @@ func (c *config) merge(in *config) {
 	c.Hooks.StartContainer = mergeHook(c.Hooks.StartContainer, in.Hooks.StartContainer)
 	c.Hooks.Poststart = mergeHook(c.Hooks.Poststart, in.Hooks.Poststart)
 	c.Hooks.Poststop = mergeHook(c.Hooks.Poststop, in.Hooks.Poststop)
+
 }
 
 func readHooks(path string) (*config, error) {
