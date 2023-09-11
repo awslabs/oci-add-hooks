@@ -48,8 +48,8 @@ A few things need to be done to use `oci-add-hooks` with Docker. First modify
 	"/path/to/config.json",
 	"--runtime-path",
 	"<path/to/oci/runtime>",
-    "--log-path",
-    "<path/to/logpath>"]
+    	"--log-path",
+    	"<path/to/logpath>"]
     }
   }
 }
@@ -87,8 +87,8 @@ look like:
 	"/home/user/hook-config.json",
 	"--runtime-path",
 	"runc",
-    "--log-path",
-    "/home/user/log"]
+    	"--log-path",
+    	"/home/user/log"]
     }
   }
 }
