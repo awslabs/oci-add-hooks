@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  git-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull latest awslabs/git-secrets repo
+        uses: actions/checkout@v4
+        with:
+          repository: awslabs/git-secrets
+          ref: 1.3.0
+          fetch-tags: true
+          path: git-secrets
+      - name: Install git secrets from source
+        run: sudo make install
+        working-directory: git-secrets
+      - uses: actions/checkout@v4
+      - name: Scan repository for git secrets
+        run: |
+          git secrets --register-aws
+          git secrets --scan-history
+
+  test:
+    strategy:
+      matrix:
+        go: ['1.23', '1.24']
+
+      # Build all variants regardless of failures
+      fail-fast: false
+    name: Go ${{ matrix.go }})
+    runs-on: ubuntu-latest 
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+      - run: make test
