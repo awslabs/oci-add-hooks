@@ -3,23 +3,32 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 )
 
 const (
 	// Size of the buffer for catching os.Signal sent to this process
 	signalBufferSize = 32
+
+	// For the exit code, I only added createLogFailure, 
+	// I'm not quite sure what numbers are included in runc's ExitStatus, 
+	// I chose 111 for createLogFailure, hopefully it won't overlap with runc's ExitStatus
 	exitCodeFailure  = 1
+	createLogFailure = 111
 )
 
 var (
 	errUnableToFindRuntime = errors.New("unable to find runtime")
 
 	commit string
+
+	logMode bool = false
 )
 
 func main() {
@@ -40,15 +49,38 @@ func main() {
 	hookConfigPath := os.Args[2]
 	runcPath := os.Args[4]
 	passthroughArgs := os.Args[5:]
+	// Check if --log-path flag is provided
+	if len(passthroughArgs) > 0 && passthroughArgs[0] == "--log-path" {
+		if len(passthroughArgs) < 2 {
+			os.Exit(exitCodeFailure)
+		}
+		logPath := passthroughArgs[1]
+		passthroughArgs = passthroughArgs[2:]
+		if createLogFile(logPath) != 0 {
+			os.Exit(createLogFailure)
+		}
+		logMode = true
+	}
+	if logMode {
+		log.Println("Running oci-add-hooks")
+		log.Println("Oci-add-hooks arguments right")
+	}
 	os.Exit(run(hookConfigPath, runcPath, passthroughArgs))
 }
 
 func run(hookConfigPath, runcPath string, runcArgs []string) int {
 	// If required args aren't present, bail
 	if hookConfigPath == "" || runcPath == "" {
+		if logMode {
+			log.Println("Error: hookConfigPath or runcPath is \"\"")
+		}
 		return exitCodeFailure
 	}
-
+	if logMode {
+		log.Printf("HookconfigPath: %v\n", hookConfigPath)
+		log.Printf("RuncPath: %v\n", runcPath)
+		log.Printf("RuncArgs: \n%v\n", runcArgs)
+	}
 	// If a hookConfigPath passed, process the bundle and pass modified
 	// spec to runc
 	return processBundle(hookConfigPath, runcPath, runcArgs)
@@ -62,13 +94,25 @@ func processBundle(hookPath, runcPath string, runcArgs []string) int {
 			bundlePath := runcArgs[i+1]
 			bundlePath = filepath.Join(bundlePath, "config.json")
 			// Add the hooks from hookPath to our bundle/config.json
+			if logMode {
+				log.Printf("BundleFile: \n%v\n", bundlePath)
+			}
 			merged, err := addHooks(bundlePath, hookPath)
 			if err != nil {
+				if logMode {
+					log.Printf("Error: %v\n", err)
+				}
 				return exitCodeFailure
 			}
 			err = merged.writeFile(bundlePath)
 			if err != nil {
+				if logMode {
+					log.Printf("Error: %v\n", err)
+				}
 				return exitCodeFailure
+			}
+			if logMode {
+				log.Println("Add hooks to bundlefile success")
 			}
 			break
 		}
@@ -76,6 +120,9 @@ func processBundle(hookPath, runcPath string, runcArgs []string) int {
 	// launch runc
 	path, err := verifyRuntimePath(runcPath)
 	if err != nil {
+		if logMode {
+			log.Printf("Error: runc path is wrong: %v\n", err)
+		}
 		return exitCodeFailure
 	}
 	return launchRunc(path, runcArgs)
@@ -98,7 +145,13 @@ func launchRunc(runcPath string, runcArgs []string) int {
 	signal.Notify(proc)
 	err := cmd.Start()
 	if err != nil {
+		if logMode {
+			log.Printf("Error: runc start failed: %v\n", err)
+		}
 		return exitCodeFailure
+	}
+	if logMode {
+		log.Println("Running runc")
 	}
 	// Forward signals after we start command
 	go func() {
@@ -140,12 +193,40 @@ func prepareCommand(runcPath string, args []string) *exec.Cmd {
 func addHooks(bundlePath, hookPath string) (*config, error) {
 	specHooks, err := readHooks(bundlePath)
 	if err != nil {
+		if logMode {
+			log.Println("Error: read bundlePath hooks failed")
+		}
 		return nil, err
 	}
 	addHooks, err := readHooks(hookPath)
 	if err != nil {
+		if logMode {
+			log.Println("Error: read hookPath hooks failed")
+		}
 		return nil, err
 	}
 	specHooks.merge(addHooks)
 	return specHooks, nil
+}
+
+// Create log file 
+func createLogFile(logFilePath string) int {
+	if logFilePath == "" {
+		return 1
+	}
+	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
+		err := os.MkdirAll(logFilePath, 0755)
+		if err != nil {
+			return 1
+		}
+	}
+	logFileName := time.Now().Format("20060102") + ".log"
+	logFileName = filepath.Join(logFilePath, logFileName)
+	logFile, err := os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
+	if err != nil {
+		return 1
+	}
+	log.SetOutput(logFile)
+	log.SetFlags(log.Ldate | log.Ltime)
+	return 0
 }

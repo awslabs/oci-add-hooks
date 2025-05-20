@@ -8,7 +8,7 @@ passing along to an OCI compatable runtime.
 
 This runtime can be invoked by doing
 
-```
+```shell
 oci-add-hooks \
 	--hook-config-path </path/to/hook/config>
 	--runtime-path </path/to/oci/runtime> \
@@ -18,12 +18,26 @@ oci-add-hooks \
 ```
 - `hook-config-path` is a json file that follows the format described [here](https://github.com/opencontainers/runtime-spec/blob/master/config.md#posix-platform-hooks).
 - `runtime-path` is a path to an OCI runtime binary.
-- `bundle`,if present, specifies the path to the bundle directory.
+- `bundle`, if present, specifies the path to the bundle directory.
+
+If you want to save the log of this runtime for better debug, this runtime can be invoked by doing
+
+```shell
+oci-add-hooks \
+	--hook-config-path </path/to/hook/config>
+	--runtime-path </path/to/oci/runtime> \
+	--log-path </path/to/logpath> \
+	…\
+	[--bundle <path/to/bundle> \]
+	…
+```
+
+- `log-path` is a path to save the log of oci-add-hooks.
 
 ### With Docker
 
 A few things need to be done to use `oci-add-hooks` with Docker. First modify
-`/etc/docker/daemon.json` to includ a "runtimes" section similiar to the following:
+`/etc/docker/daemon.json` to include a "runtimes" section similiar to the following:
 
 ```json
 {
@@ -33,13 +47,17 @@ A few things need to be done to use `oci-add-hooks` with Docker. First modify
       "runtimeArgs": ["--hook-config-path",
 	"/path/to/config.json",
 	"--runtime-path",
-	"<path/to/oci/runtime>"]
+	"<path/to/oci/runtime>",
+    	"--log-path",
+    	"<path/to/logpath>"]
     }
   }
 }
 ```
-> note: path here should either include this binaries name when it's on the path
-> or the full path/name if it's not.
+> note: 
+>
+> - Path here should either include this binaries name when it's on the path or the full path/name if it's not. You can run add_to_bin.sh to add this runtime to make it on the path.
+> - "--log-path", "<path/to/logpath>" is optional. And the log file name will be like path/to/logpath/20230911.log
 
 
 If we had a hypothetical hook config located at `/home/user/hook-config.json`
@@ -68,7 +86,9 @@ look like:
       "runtimeArgs": ["--hook-config-path",
 	"/home/user/hook-config.json",
 	"--runtime-path",
-	"runc"]
+	"runc",
+    	"--log-path",
+    	"/home/user/log"]
     }
   }
 }

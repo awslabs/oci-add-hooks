@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 
 	lossless "github.com/joeshaw/json-lossless"
@@ -56,7 +55,7 @@ func (c *config) writeFile(path string) error {
 	} else {
 		mode = info.Mode()
 	}
-	return ioutil.WriteFile(path, bytes, mode.Perm())
+	return os.WriteFile(path, bytes, mode.Perm())
 }
 
 func (c *config) merge(in *config) {
@@ -73,7 +72,7 @@ func (c *config) merge(in *config) {
 }
 
 func readHooks(path string) (*config, error) {
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
