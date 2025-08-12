@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Pull latest awslabs/git-secrets repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: awslabs/git-secrets
           ref: 1.3.0
@@ -22,7 +22,7 @@ jobs:
       - name: Install git secrets from source
         run: sudo make install
         working-directory: git-secrets
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Scan repository for git secrets
         run: |
           git secrets --register-aws
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest 
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
