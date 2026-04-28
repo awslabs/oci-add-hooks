@@ -31,7 +31,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go: ['1.23', '1.24']
+        go: ['1.25', '1.26']
 
       # Build all variants regardless of failures
       fail-fast: false
@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
       - run: make test
